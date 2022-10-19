@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	log.SetFlags(log.Lmsgprefix)
 	err := godotenv.Load()
 	if err != nil {
 		log.Printf("Could not load .env file:  %s", err)
@@ -30,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// log.Printf("External IP is %s\n", ip)
-	log.SetPrefix("[" + ip + "]")
+	log.SetPrefix("[" + ip + "] ")
 
 	hosts, err := config.LoadHosts("hosts.json")
 	if err != nil {

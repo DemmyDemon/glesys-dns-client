@@ -1,40 +1,41 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/DemmyDemon/glesys-dns-client/config"
 	"github.com/DemmyDemon/glesys-dns-client/glesys"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("Could not load .env file:  %s", err)
-	}
-	user := os.Getenv("GLESYS_USER")
-	key := os.Getenv("GLESYS_KEY")
-	if user == "" {
-		log.Fatal("Missing GLESYS_USER environment variable")
-	}
-	if key == "" {
-		log.Fatal("Missing GLESYS_KEY environment variable")
-	}
-	client := glesys.NewGlesysClient(user, key)
 
 	ip, err := config.GetExternalIPv4()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Could not determine external IPv4: %s\n", err)
 	}
-	// log.Printf("External IP is %s\n", ip)
 	log.SetPrefix("[" + ip + "] ")
 
-	hosts, err := config.LoadHosts("hosts.json")
+	homedir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal("Could not load hosts.json")
+		log.Fatalf("Could not determine homedir: %s\n", err)
 	}
 
-	client.Update(ip, hosts)
+	var configFile string
+	flag.StringVar(&configFile, "cfg", homedir+"/.glesys_dns.json", "Path to where the Configuration is stored.")
+	flag.StringVar(&ip, "ip", ip, "IP address to check against, and update to.")
+	flag.Parse()
+
+	configFile = filepath.Clean(configFile)
+
+	cfg, err := config.Load(configFile)
+	if err != nil {
+		log.Fatalf("Could not load configuration file: %s", err)
+	}
+
+	client := glesys.NewGlesysClient(cfg.Credentials.User, cfg.Credentials.Key)
+
+	client.Update(ip, cfg.Hosts)
 }

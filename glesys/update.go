@@ -3,13 +3,16 @@ package glesys
 import (
 	"log"
 	"sync"
+
+	"github.com/DemmyDemon/glesys-dns-client/config"
 )
 
-func (glesys GlesysClient) Update(ip string, hosts map[string][]string) {
+func (glesys GlesysClient) Update(ip string, hosts []config.GlesysHost) {
 	wg := sync.WaitGroup{}
-	for currentdomain, currentsubdomains := range hosts {
+	for _, host := range hosts {
 		wg.Add(1)
 		go func(domain string, subdomains []string) {
+			defer wg.Done()
 			records, err := glesys.RecordMap(domain, "A")
 			if err != nil {
 				log.Printf("Failed to get records for %s: %s\n", domain, err)
@@ -32,8 +35,7 @@ func (glesys GlesysClient) Update(ip string, hosts map[string][]string) {
 				}
 				log.Printf("%15s.%-15s -> %s", subdomain, domain, status)
 			}
-			wg.Done()
-		}(currentdomain, currentsubdomains)
+		}(host.Domain, host.Subdomains)
 	}
 	wg.Wait()
 }

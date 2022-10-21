@@ -3,6 +3,7 @@ package glesys
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -43,6 +44,11 @@ func (glesys GlesysClient) doRequest(rq *http.Request) (GlesysResponse, error) {
 		return GlesysResponse{}, err
 	}
 
+	// Treat anything not in the 200 range as an error
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		return GlesysResponse{}, errors.New(response.Status)
+	}
+
 	responseData := GlesysResponse{}
 	err = json.NewDecoder(response.Body).Decode(&responseData)
 	return responseData, err
@@ -60,6 +66,7 @@ func (glesys GlesysClient) ListRecords(domain string) (GlesysResponse, error) {
 	return glesys.doRequest(rq)
 }
 
+// RecordMap returns just the actual records from ListRecords, in a map keyed on the `Host` value of the record.
 func (glesys GlesysClient) RecordMap(domain string, recordType string) (map[string]Record, error) {
 	records := make(map[string]Record)
 	response, err := glesys.ListRecords(domain)

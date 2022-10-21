@@ -1,0 +1,16 @@
+{
+    "credentials" : {
+        "user" : "Your GleSYS user name here",
+        "key" : "Your GleSYS API key here"
+    },
+    "hosts" : [
+        {
+            "domain": "example.com",
+            "subdomains": ["your", "dynamic", "hosts"]
+        },
+        {
+            "domain": "z0rz.net",
+            "subdomains" : ["@", "www"]
+        }
+    ]
+}

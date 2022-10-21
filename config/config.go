@@ -5,14 +5,27 @@ import (
 	"os"
 )
 
-func LoadHosts(path string) (map[string][]string, error) {
-	hosts := map[string][]string{}
+type GlesysHost struct {
+	Domain     string   `json:"domain"`
+	Subdomains []string `json:"subdomains"`
+}
+type GlesysCredentials struct {
+	User string `json:"user"`
+	Key  string `json:"key"`
+}
+
+type GlesysConfig struct {
+	Hosts       []GlesysHost      `json:"hosts"`
+	Credentials GlesysCredentials `json:"credentials"`
+}
+
+func Load(path string) (GlesysConfig, error) {
+	cfg := GlesysConfig{}
 	file, err := os.Open(path)
 	if err != nil {
-		return hosts, err
+		return cfg, err
 	}
 	defer file.Close()
-
-	err = json.NewDecoder(file).Decode(&hosts)
-	return hosts, err
+	err = json.NewDecoder(file).Decode(&cfg)
+	return cfg, err
 }

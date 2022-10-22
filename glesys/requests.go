@@ -12,6 +12,7 @@ import (
 type GlesysClient struct {
 	User   string
 	Key    string
+	Base   string
 	Client *http.Client
 }
 
@@ -20,6 +21,7 @@ func NewGlesysClient(user string, key string) GlesysClient {
 	return GlesysClient{
 		User:   user,
 		Key:    key,
+		Base:   "https://api.glesys.com",
 		Client: &http.Client{},
 	}
 }
@@ -27,7 +29,7 @@ func NewGlesysClient(user string, key string) GlesysClient {
 // buildRequest builds the request will all the headers and stuff.
 func (glesys GlesysClient) buildRequest(url string, rawData url.Values) (*http.Request, error) {
 	data := bytes.NewBuffer([]byte(rawData.Encode()))
-	rq, err := http.NewRequest("POST", url, data)
+	rq, err := http.NewRequest("POST", glesys.Base+url, data)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +61,7 @@ func (glesys GlesysClient) ListRecords(domain string) (GlesysResponse, error) {
 
 	rawData := url.Values{"domainname": {domain}}
 
-	rq, err := glesys.buildRequest("https://api.glesys.com/domain/listrecords/format/json", rawData)
+	rq, err := glesys.buildRequest("/domain/listrecords/format/json", rawData)
 	if err != nil {
 		return GlesysResponse{}, err
 	}
@@ -86,7 +88,7 @@ func (glesys GlesysClient) UpdateRecord(recordId int, newIP string) (GlesysRespo
 
 	rawData := url.Values{"recordid": {strconv.Itoa(recordId)}, "data": {newIP}}
 
-	rq, err := glesys.buildRequest("https://api.glesys.com/domain/updaterecord/format/json", rawData)
+	rq, err := glesys.buildRequest("/domain/updaterecord/format/json", rawData)
 	if err != nil {
 		return GlesysResponse{}, err
 	}

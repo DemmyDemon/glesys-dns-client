@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
-var ErrCouldNotDetermine = errors.New("Could not detemine your IPv4 address!")
+var ErrCouldNotDetermine = errors.New("could not detemine your IPv4 address")
 
+// GetExternalIPv4 returns the first found external IPv4 of the current host.
+// "external" meaning it is not a 192.168.0.0/16 or a 10.0.0.0/24
 func GetExternalIPv4() (string, error) {
 	ifaces, err := net.Interfaces()
 	if err != nil {

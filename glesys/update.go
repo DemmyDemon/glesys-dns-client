@@ -7,6 +7,7 @@ import (
 	"github.com/DemmyDemon/glesys-dns-client/config"
 )
 
+// Update goes through the given records and make sure they match the given IP
 func (glesys GlesysClient) Update(ip string, hosts []config.GlesysHost) {
 	wg := sync.WaitGroup{}
 	for _, host := range hosts {

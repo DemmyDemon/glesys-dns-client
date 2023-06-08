@@ -37,5 +37,19 @@ func main() {
 
 	client := glesys.NewGlesysClient(cfg.Credentials.User, cfg.Credentials.Key)
 
+	certbotDomain := os.Getenv("CERTBOT_DOMAIN")
+	if certbotDomain != "" {
+		// That is, we're in CERTBOT mode...
+		certbotValidation := os.Getenv("CERTBOT_VALIDATION")
+		if certbotValidation == "" {
+			certbotValidation = "dry-run"
+		}
+		err := client.Certbot(certbotDomain, certbotValidation)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0) // DO NOT do the updates if we're in certbot mode.
+	}
+
 	client.Update(ip, cfg.Hosts)
 }

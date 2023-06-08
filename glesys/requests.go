@@ -83,10 +83,27 @@ func (glesys GlesysClient) RecordMap(domain string, recordType string) (map[stri
 	return records, nil
 }
 
-// UpdateRecord attempts to update the given record to the new IP
-func (glesys GlesysClient) UpdateRecord(recordId int, newIP string) (GlesysResponse, error) {
+// CreateRecord attempts to create a record with the given parameters
+func (glesys GlesysClient) CreateRecord(domain string, recordType string, recordName string, recordValue string) (GlesysResponse, error) {
+	rawData := url.Values{
+		"domainname": {domain},
+		"host":       {recordName},
+		"type":       {recordType},
+		"data":       {recordValue},
+		"ttl":        {"60"}, // Short TTL to avoid oopsed run DNS cache issues
+	}
 
-	rawData := url.Values{"recordid": {strconv.Itoa(recordId)}, "data": {newIP}}
+	rq, err := glesys.buildRequest("/domain/addrecord/format/json", rawData)
+	if err != nil {
+		return GlesysResponse{}, err
+	}
+	return glesys.doRequest(rq)
+}
+
+// UpdateRecord attempts to update the given record to the new value
+func (glesys GlesysClient) UpdateRecord(recordId int, newValue string) (GlesysResponse, error) {
+
+	rawData := url.Values{"recordid": {strconv.Itoa(recordId)}, "data": {newValue}}
 
 	rq, err := glesys.buildRequest("/domain/updaterecord/format/json", rawData)
 	if err != nil {

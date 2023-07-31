@@ -23,10 +23,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not determine homedir: %s\n", err)
 	}
-
+	var certBotClean string
 	var configFile string
 	flag.StringVar(&configFile, "cfg", homedir+"/.glesys_dns.json", "Path to where the Configuration is stored.")
 	flag.StringVar(&ip, "ip", ip, "IP address to check against, and update to.")
+	flag.StringVar(&certBotClean, "certbotclean", "", "Domain to clean up certbot validations for")
 	flag.Parse()
 
 	configFile = filepath.Clean(configFile)
@@ -37,6 +38,14 @@ func main() {
 	}
 
 	client := glesys.NewGlesysClient(cfg.Credentials.User, cfg.Credentials.Key)
+
+	if certBotClean != "" {
+		err := client.CertbotCleanup(certBotClean)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0) // Because if we're cleaning, we are *just* cleaning.
+	}
 
 	certbotDomain := os.Getenv("CERTBOT_DOMAIN")
 	if certbotDomain != "" {

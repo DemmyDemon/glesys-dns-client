@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/DemmyDemon/glesys-dns-client/config"
 	"github.com/DemmyDemon/glesys-dns-client/glesys"
@@ -58,6 +59,8 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("Will idle for 60 seconds for TXT records to settle.")
+		time.Sleep(60 * time.Second)
 		os.Exit(0) // DO NOT do the updates if we're in certbot mode.
 	}
 

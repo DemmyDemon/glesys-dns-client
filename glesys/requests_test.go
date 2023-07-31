@@ -44,6 +44,8 @@ func TestRecordMap(t *testing.T) {
 	}
 }
 
+// TODO: TestRecordMapMultiple
+
 func TestUpdateRecord(t *testing.T) {
 	server := stubServer(t)
 	defer server.Close()
@@ -54,3 +56,5 @@ func TestUpdateRecord(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+// TODO: TestDeleteRecord

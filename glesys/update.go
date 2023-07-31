@@ -46,32 +46,32 @@ func (glesys GlesysClient) Update(ip string, hosts []config.GlesysHost) {
 	wg.Wait()
 }
 
-// Certbot updates or creates the _acme-challenge TXT record for the given domain
+// Certbot creates the _acme-challenge TXT record for the given domain
 func (glesys GlesysClient) Certbot(domain string, validation string) error {
 
-        log.Printf("Certbot validation for %s: %q\n", domain, validation)
-
-	records, err := glesys.RecordMap(domain, "TXT")
-	if err != nil {
-		return fmt.Errorf("certbot get records: %w", err)
-	}
-	if record, ok := records["_acme-challenge"]; ok {
-		if record.Data == validation {
-			log.Printf("Certbot challenge for %s is unchanged: Skipping update\n", domain)
-			return nil
-		}
-		_, err := glesys.UpdateRecord(record.Recordid, validation)
-		if err != nil {
-			return fmt.Errorf("certbot update record: %w", err)
-		}
-		log.Printf("Updated Certbot challenge for %s\n", domain)
-		return nil
-	}
-
-	_, err = glesys.CreateRecord(domain, "TXT", "_acme-challenge", validation)
+	_, err := glesys.CreateRecord(domain, "TXT", "_acme-challenge", validation)
 	if err != nil {
 		return fmt.Errorf("certbot create record: %w", err)
 	}
-	log.Printf("Created Certbot challenge for %s\n", domain)
+	log.Printf("Created Certbot challenge for %s: %q\n", domain, validation)
+
+	return nil
+}
+
+// CertbotCleanup cleans up any and all _acme-challenge TXT records for the given domain
+func (glesys GlesysClient) CertbotCleanup(domain string) error {
+	records, err := glesys.RecordMapMultiple(domain, "TXT")
+	if err != nil {
+		return fmt.Errorf("certbot get records: %w", err)
+	}
+	if recordSlice, ok := records["_acme-challenge"]; ok {
+		for _, record := range recordSlice {
+			_, err := glesys.DeleteRecord(record.Recordid)
+			if err != nil {
+				return fmt.Errorf("certbot delete record: %w", err)
+			}
+		}
+		log.Printf("Cleaned up Certbot challenge for %s\n", domain)
+	}
 	return nil
 }

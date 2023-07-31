@@ -83,6 +83,25 @@ func (glesys GlesysClient) RecordMap(domain string, recordType string) (map[stri
 	return records, nil
 }
 
+// RecordMapMultiple returns the records from ListRecords, but in a map keyed on the `Host` value. This variant does so in a slice, supporting multiple of the same `Host`.
+func (glesys GlesysClient) RecordMapMultiple(domain string, recordType string) (map[string][]Record, error) {
+	records := make(map[string][]Record)
+	response, err := glesys.ListRecords(domain)
+	if err != nil {
+		return records, err
+	}
+	for _, record := range response.Response.Records {
+		if record.Type != recordType {
+			continue
+		}
+		if _, ok := records[record.Host]; !ok {
+			records[record.Host] = make([]Record, 0, 1)
+		}
+		records[record.Host] = append(records[record.Host], record)
+	}
+	return records, nil
+}
+
 // CreateRecord attempts to create a record with the given parameters
 func (glesys GlesysClient) CreateRecord(domain string, recordType string, recordName string, recordValue string) (GlesysResponse, error) {
 	rawData := url.Values{
@@ -106,6 +125,16 @@ func (glesys GlesysClient) UpdateRecord(recordId int, newValue string) (GlesysRe
 	rawData := url.Values{"recordid": {strconv.Itoa(recordId)}, "data": {newValue}}
 
 	rq, err := glesys.buildRequest("/domain/updaterecord/format/json", rawData)
+	if err != nil {
+		return GlesysResponse{}, err
+	}
+	return glesys.doRequest(rq)
+}
+
+// DeleteRecord attempts to delete the given record
+func (glesys GlesysClient) DeleteRecord(recordId int) (GlesysResponse, error) {
+	rawData := url.Values{"recordid": {strconv.Itoa(recordId)}}
+	rq, err := glesys.buildRequest("/domain/deleterecord/format/json", rawData)
 	if err != nil {
 		return GlesysResponse{}, err
 	}

@@ -16,7 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not determine external IPv4: %s\n", err)
 	}
-        log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stdout)
 	log.SetPrefix("[" + ip + "] ")
 
 	homedir, err := os.UserHomeDir()

@@ -49,6 +49,8 @@ func (glesys GlesysClient) Update(ip string, hosts []config.GlesysHost) {
 // Certbot updates or creates the _acme-challenge TXT record for the given domain
 func (glesys GlesysClient) Certbot(domain string, validation string) error {
 
+        log.Printf("Certbot validation for %s: %q\n", domain, validation)
+
 	records, err := glesys.RecordMap(domain, "TXT")
 	if err != nil {
 		return fmt.Errorf("certbot get records: %w", err)
